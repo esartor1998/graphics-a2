@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>WebGL Demo</title>
+		<link rel="stylesheet" href="./webgl.css" type="text/css">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
+				integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ=="
+				crossorigin="anonymous" defer>
+		</script>
+		<script src="webgl.js" defer></script>
+		<script src="loaddata.js" ></script>
+		<script type="text/javascript">
+			'use strict';
+			function init() {
+				window.onkeydown = checkKey;
+				initParticles();
+			}
+
+			// process keyboard events
+			// keypress triggers changes in variables which affect drawing
+			function checkKey(event) {
+				switch (event.keyCode) {
+				// number 1 
+				case 49: 
+					rotValue += Math.PI / 6;
+					break;
+				// letter a or A
+				case 65: 
+					if (size == 0.1) {
+						size = 0.2;
+					} else {
+						size = 0.1;
+					}
+					break;
+				// letter r
+				case 82:
+					initParticles();
+					alert("restarted system!")
+					break;
+				}
+			}
+			window.onload = init;
+		</script>
+	</head>
+	<body>
+		<canvas id="glcanvas" width="640" height="480"></canvas>
+	</body>
+</html>
