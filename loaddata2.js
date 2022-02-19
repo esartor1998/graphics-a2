@@ -41,7 +41,7 @@ class Particle {
 	calculateOffsets() { //only sets y if it is undefined, to prevent a change in xzOffset also changing y direction
 		this.offsets = {
 			x: randRange(-xzOffset, xzOffset),
-			y: this.offsets.y === undefined ? (Math.random() > 0.5 ? yOffset : -yOffset) : this.offsets.y,
+			y: this.offsets.y === undefined ? yOffset : this.offsets.y,
 			z: randRange(-xzOffset, xzOffset)
 		};
 	}
