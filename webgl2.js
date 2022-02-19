@@ -25,6 +25,7 @@ function main() {
 
  	const vsSource = `
 		attribute vec4 aVertexPosition;
+		attribute vec4 aVertexColor;
 		attribute vec3 aVertexNormal;
 		attribute vec2 aTextureCoord;
 		uniform mat4 uNormalMatrix;
@@ -32,6 +33,7 @@ function main() {
 		uniform mat4 uProjectionMatrix;
 		varying highp vec2 vTextureCoord;
 		varying highp vec3 vLighting;
+		varying lowp vec4 vColor;
 		void main(void) {
 			gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
 			vTextureCoord = aTextureCoord;
@@ -42,6 +44,7 @@ function main() {
 			highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
 			highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
 			vLighting = ambientLight + (directionalLightColor * directional);
+			vColor = aVertexColor;
 		}
   	`; //hmm.
 
@@ -51,9 +54,10 @@ function main() {
 		varying highp vec2 vTextureCoord;
 		varying highp vec3 vLighting;
 		uniform sampler2D uSampler;
+		varying lowp vec4 vColor;
 		void main(void) {
 			highp vec4 texelColor = texture2D(uSampler, vTextureCoord);
-			gl_FragColor = vec4(texelColor.rgb * vLighting, texelColor.a);
+			gl_FragColor = vColor;
     	}
   	`; //yes...
 
@@ -71,6 +75,7 @@ function main() {
     		vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
     		vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
     		textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
+			vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
     	},
     	uniformLocations: {
 			projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
@@ -162,11 +167,20 @@ function initBuffers(gl) {
 
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.DYNAMIC_DRAW);
 
+
+	const colors = loadcolours();
+	//the only correct spelling of colour in this whole file cuz webgl hates it when you can spell
+
+	const colorBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
 	return {
 		position: positionBuffer,
 		normal: normalBuffer,
 		textureCoord: textureCoordBuffer,
 		indices: indexBuffer,
+		color: colorBuffer,
 	};
 }
 
@@ -338,6 +352,26 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
 			offset);
 		gl.enableVertexAttribArray(
 			programInfo.attribLocations.vertexNormal);
+	}
+
+	// Tell WebGL how to pull out the colors from the color buffer
+	// into the vertexColor attribute.
+	{
+		const numComponents = 4;
+		const type = gl.FLOAT;
+		const normalize = false;
+		const stride = 0;
+		const offset = 0;
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
+		gl.vertexAttribPointer(
+			programInfo.attribLocations.vertexColor,
+			numComponents,
+			type,
+			normalize,
+			stride,
+			offset);
+		gl.enableVertexAttribArray(
+			programInfo.attribLocations.vertexColor);
 	}
 
 	// Tell WebGL which indices to use to index the vertices

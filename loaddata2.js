@@ -169,6 +169,19 @@ function loadheight() {
    return 2;
 }
 
+function loadcolours() {
+    let colours = [];
+    for (let c = 0; c < particles.length; c++) {
+        colours.push(
+            randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), //random colour 1
+            randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), //random colour 2
+            randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), //random colour 3
+            randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), //viewer must die
+        );
+    } //exterpeince paion
+    return colours;
+}
+
 function loadtexture() {
    return(new Uint8Array([50,100,50,255,
                           100,150,100,255,
