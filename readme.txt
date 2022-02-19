@@ -1,13 +1,3 @@
-
-Starting code for assignment 2.
-
--demonstrates changing mesh to create animations
--draws a pair of rectangles that move up and down after a number of frames
-
-Sample keyboard input in index.html
--the 1 key rotates the objects
--the a key alternates between two heights for the geometry
-
 Assignment 1 - Particle Systems, Vertex Colour
 Due. Friday February 18, 2022
 
@@ -60,16 +50,13 @@ used to set the  properties for each particle:
 -direction offset - where the particle moves on the next step
 -maximum age - what is the maximum age for the particles in the system
 -variation in maximum age - how much variation will there be for each
-particle,
-not all particles must have the same maximum age, this control the
+particle, not all particles must have the same maximum age, this control the
 variations in maximum age for each particle
 -repeating or one generation - do particles restart after their maximum age
-is
-reached or do they stop - this is only used the the particles draw
+is reached or do they stop - this is only used the the particles draw
 a path (the above parameter)
 -draw the path or individual particle - are the previously drawn
-particles
-erased or do they remain in the system and continue to be drawn
+particles erased or do they remain in the system and continue to be drawn
 
 Initial particle locations will be on a plane between (-2.0, -1.0, -2.0) and
 (2.0, -1.0, 2.0). Starting position will be randomized on this plane.
@@ -87,14 +74,14 @@ can be 1, 10, and 100. When the n key is pressed the number of particles will
 change from 1 to 10 and then to 100. If n is pressed again then the number of
 particles will return to 1.
 
-Parameter 			Values 			Keyboard Input
-Reinitialize System    - 				  r 	 		 (restarts the system)
-Number Particles 	1, 10, 100 			  n
-Direction Offset  0.05, 0.1, 0.2 		  d 			(amount to offset x,z)
-Maximum Age 	    10, 20, 50 			  a 	(number of steps before reset)
-Age Variation 		 0, 5, 10 			  s 	   (add/subtract from max age)
-Repeating 		    yes or no 			  m 		   (one ormore iterations)
-Path 			    yes or no 			  p
+Parameter              Values          Input
+Reinitialize System       -              r              (restarts the system)
+Number Particles     1, 10, 100          n
+Direction Offset     0.05, 0.1, 0.2      d             (amount to offset x,z)
+Maximum Age          10, 20, 50          a     (number of steps before reset)
+Age Variation          0, 5, 10          s        (add/subtract from max age)
+Repeating             yes or no          m           (one or more iterations)
+Path                  yes or no          p
 
 
 The default values are the first number in the Values column.

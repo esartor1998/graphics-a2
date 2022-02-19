@@ -21,23 +21,90 @@
 			// keypress triggers changes in variables which affect drawing
 			function checkKey(event) {
 				switch (event.keyCode) {
-				// number 1 
-				case 49: 
-					rotValue += Math.PI / 6;
-					break;
-				// letter a or A
-				case 65: 
-					if (size == 0.1) {
-						size = 0.2;
-					} else {
-						size = 0.1;
-					}
-					break;
-				// letter r
-				case 82:
-					initParticles();
-					alert("restarted system!")
-					break;
+					// number 1 
+					case 49: //keeping this in lmao
+						rotValue += Math.PI / 6;
+						break;
+					// letter a or A
+					case 65:
+						switch (maxAge) {
+                            case 10:
+                                maxAge = 20;
+                                break;
+                            case 20:
+                                maxAge = 50;
+                                break;
+                            case 50:
+                                maxAge = 10;
+                                break;
+                        }
+						console.log("maxAge is now",maxAge);
+						break;
+					//d for directional offset
+					case 68:
+						switch (xzOffset) {
+							case 0.05:
+								xzOffset = 0.1;
+								break;
+							case 0.1:
+								xzOffset = 0.2;
+								break;
+							case 0.2:
+								xzOffset = 0.05;
+								break;
+						}
+						reinit.offsets = true;
+						console.log("xzOffset is now",xzOffset);
+						break;
+					// m for... "repeat"?
+					case 77:
+						repeat = !repeat
+						console.log("repeat is now",repeat);
+						break;
+					// n for "number"
+					case 78:
+						switch(particleCount) {
+							case 1:
+								particleCount = 10;
+								break;
+							case 10:
+								particleCount = 100;
+								break;
+							case 100:
+								particleCount = 1;
+								break;	
+						} //going to have to reinit the whole system after this one
+						initParticles();
+						console.log("particleCount is now",particleCount);
+						break;
+					case 80: //"path aka p"
+						retain = !retain;
+						console.log("path is now",retain);
+						break;
+					// letter r
+					case 82:
+						initParticles();
+						break;
+					// 83 is s
+					case 83:
+						switch (ageVar) {
+							case 0:
+								ageVar = 5;
+								break;
+							case 5:
+								ageVar = 10;
+								break;
+							case 10:
+								ageVar = 0;
+								break;
+						}
+						/*it's not really clear if this should be applied to all existing particles?
+						  like, should this only apply to new particles generated after the button is pressed
+						  or should i straight up recalculate every particles max age when the user presses s
+						  god only knows*/
+						//update: i've decided i'm n ot going to
+						console.log("ageVar is now",ageVar);
+						break;
 				}
 			}
 			window.onload = init;

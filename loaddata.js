@@ -1,94 +1,124 @@
 // some variables used in the demo, these can be removed
-var frameCount = 0;  // number of frames drawn
-var drawState = 1;   // flag the controls which object drawn
-var numVerts = 0;
-var particles = []; //would love to avoid using a global var buuuuut...
-const SIZE = 0.1;
-const MAX_AGE = 999;
+var frameCount = 0; // number of frames drawn
+var particles = [];
+
+var xzOffset = 0.05;
+var yOffset = 0.05;
+var particleCount = 1;
+var repeat = true;
+var retain = true; //this is referred to as "path" in the spec
+var maxAge = 10;
+var ageVar = 0;
+var size = 0.1;
+var reinit = {offsets: false}; //this originally had more values but i removed them all le mao
+
 const TEST = false;
 const TEST_INTERVAL = 120;
+const XZBOUNDS = [-2.0, 2.0];
+const YBOUNDS = [-1.0, 1.0];
 
 function randRange(min, max) {
 	return Math.random() * (min - max) + max;
 }
 
-class Coord {
+class Particle {
 	constructor(x, y, z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		this.pos = {x: x, y: y, z: z};
+		this.age = 0;
+		this.maxAge = maxAge + Math.round(randRange(0, ageVar));
+		this.isClone = false; //used to prevent the cloned particles from moving on their own
+		this.offsets = {};
+		this.calculateOffsets();
+		this.calculateVertices();
+		this.normals = [0.0, 0.0, 1.0,
+                        0.0, 0.0, 1.0,
+                        0.0, 0.0, 1.0,
+
+                        0.0, 0.0, 1.0,
+                        0.0, 0.0, 1.0,
+                        0.0, 0.0, 1.0]; //i COULD calcualte these...
 	}
-	toArray() {
-		return [this.x, this.y, this.z];
-	} //really a shame i cant return these in any other way and still preserve order
+	calculateOffsets() { //only sets y if it is undefined, to prevent a change in xzOffset also changing y direction
+		this.offsets = {
+			x: randRange(-xzOffset, xzOffset),
+			y: this.offsets.y === undefined ? (Math.random() > 0.5 ? yOffset : -yOffset) : this.offsets.y,
+			z: randRange(-xzOffset, xzOffset)
+		};
+	}
+	calculateVertices() { //internally used mf constantly
+		let hsize = size/2;
+		this.vertices = [this.pos.x - hsize, this.pos.y + hsize, this.pos.z,
+                         this.pos.x + hsize, this.pos.y + hsize, this.pos.z,
+                         this.pos.x + hsize, this.pos.y - hsize, this.pos.z,
+
+                         this.pos.x - hsize, this.pos.y + hsize, this.pos.z,
+                         this.pos.x + hsize, this.pos.y - hsize, this.pos.z,
+                         this.pos.x - hsize, this.pos.y - hsize, this.pos.z];
+	}
+	updatePos() {
+		this.pos.x += this.offsets.x;
+		this.pos.y += this.offsets.y;
+		this.pos.z += this.offsets.z;
+		this.calculateVertices();
+	}
+	clone() {
+		let cloned = Object.assign(Object.create(Object.getPrototypeOf(this)),JSON.parse(JSON.stringify(this))); //japaspript
+		cloned.isClone = true;
+		return cloned;
+	}
 }
 
-class Particle {
-	constructor(x, y, z, maxAge) {
-		this.pos = new Coord(x, y, z);
-		this.age = 0;
-		this.max_age = maxAge;
-		let hsize = SIZE/2;
-		this.vertices = [this.pos.x - hsize, y + hsize, this.pos.z,
-						 this.pos.x + hsize, y + hsize, this.pos.z,
-						 this.pos.x + hsize, y - hsize, this.pos.z,
-						 
-						 this.pos.x - hsize, y + hsize, this.pos.z,
-						 this.pos.x + hsize, y - hsize, this.pos.z,
-						 this.pos.x - hsize, y - hsize, this.pos.z];
-		this.normals = [0.0, 0.0, 1.0,
-						0.0, 0.0, 1.0,
-						0.0, 0.0, 1.0,
-						
-						0.0, 0.0, 1.0,
-						0.0, 0.0, 1.0,
-						0.0, 0.0, 1.0]; //i COULD calcualte these...
-	}
-	updatePos(coordinate) {
-		this.pos = coordinate;
-		let hsize = SIZE/2;
-		this.vertices = [this.pos.x - hsize, y + hsize, this.pos.z,
-						 this.pos.x + hsize, y + hsize, this.pos.z,
-						 this.pos.x + hsize, y - hsize, this.pos.z,
-			
-						 this.pos.x - hsize, y + hsize, this.pos.z,
-						 this.pos.x + hsize, y - hsize, this.pos.z,
-						 this.pos.x - hsize, y - hsize, this.pos.z];
-	}
+function getDefaultParticle() {
+	return new Particle(randRange(XZBOUNDS[0], XZBOUNDS[1]), randRange(YBOUNDS[0], YBOUNDS[1]), randRange(XZBOUNDS[0], XZBOUNDS[1]));
 }
 
 // return the number of vertices in the object
-function getVertexCount() {
+function getVertexCount() { //yuh
     return particles.length * 6;
 }
 
+function reInitParticles() { //called when something changes due to a keypress.
+	//although most of the behaviour in here is just guessed because idrk what he actually wants us to do
+	for (let particleIndex in particles) {
+		if (reinit.offsets) { //for a change in xzOffset. NOTE: completely recalculates all x & z offsets
+			particles[particleIndex].calculateOffsets();
+		}
+	}
+	reinit.offsets = false;
+} //alternative implementation: callback/listener hell? EDIT: nvm i removed most of the reinit cases since they're unspecified
+
 function initParticles() {
 	particles = [];
-	for(let i = 0; i < 69; i++) {
-		particles.push(new Particle(randRange(-2.0, 2.0), randRange(-1.0, 1.0), randRange(-2.0, 2.0), MAX_AGE));
+	for(let i = 0; i < particleCount; i++) {
+		particles.push(getDefaultParticle());
 	}
 	console.log("initial particles",particles);
 }
 
 // vertex positions
-function loadvertices() {
-	// every 25 frames causes the object being drawn to change to other
-	// object
-	// this can be removed for the assignment
+function loadvertices() { //called every frame
 	let verts = [];
-	for(let i in particles) {
-		//console.log(particles[i]);
-		if (particles[i].age >= particles[i].maxAge) {
-			particles.splice(i, 1);
+	for(let i = 0; i < particles.length; i++) { //no frame limit because he literally says to remove it
+		particles[i].age += 1;
+		if (particles[i].age > particles[i].maxAge) {
+			if(particles[i].isClone || !repeat) { //the clones must die because i hate them. also kill if repeat is off
+				particles.splice(i, 1);
+			}
+			else { //otherwise we re-initialize the particle
+				particles[i] = getDefaultParticle();
+			}
 		}
-		else {
-			verts.push(particles[i].vertices);
+		if (particles[i]) {
+			if (!particles[i].isClone) { //don't re-clone or move clones
+				if (retain) { //if path is on we clone the particle before moving it
+					particles.push(particles[i].clone());
+				}
+				particles[i].updatePos();
+			}
+			verts.push(...particles[i].vertices);
 		}
 	}
-	if (TEST && frameCount % TEST_INTERVAL == 0) {
-		console.log("vertices",verts.flat());
-	}
-	return verts.flat();
+	return verts;
 }
 
 
@@ -98,12 +128,9 @@ function loadvertices() {
 function loadnormals() {
 	let normals = [];
 	for (let particleIndex in particles) {
-		normals.push(particles[particleIndex].normals); //slow? dont care.
+		normals.push(...particles[particleIndex].normals); //slow? dont care.
 	}
-	if (TEST && frameCount % TEST_INTERVAL == 0) {
-		console.log("normals",normals.flat());
-	}
-	return normals.flat();
+	return normals;
 }
 
 
@@ -118,9 +145,6 @@ function loadtextcoords() { //TODO: needs some revamping
 	for (let c = 0; c < (particles.length * 2); c++) {
 		textures.push(0.5, 0.5, 1.0, 0.5, 1.0, 1.0);
 	}
-	if (TEST && frameCount % TEST_INTERVAL == 0) {
-		console.log("textures",textures);
-	}
 	return textures;
 }
 
@@ -129,12 +153,9 @@ function loadtextcoords() { //TODO: needs some revamping
 function loadvertexindices() {
 	let indices = [];
 	for (let c = 0; c < particles.length * 6; c+=6) {
-		indices.push([c, c+1, c+2, c+3, c+4, c+5]);
+		indices.push(...[c, c+1, c+2, c+3, c+4, c+5]);
 	}
-	if (TEST && frameCount % TEST_INTERVAL == 0) {
-		console.log("indices",indices.flat());
-	}
-	return indices.flat(); //slow? don't care.
+	return indices; //slow? don't care.
 }
 
 // texture array size and data
@@ -148,9 +169,9 @@ function loadheight() {
 
 function loadtexture() {
    return(new Uint8Array([50,100,50,255,
-                           100,150,100,255,
-                           150,200,150,255,
-                           200,250,200,255])
+                          100,150,100,255,
+                          150,200,150,255,
+                          200,250,200,255])
 	);
 }
 
