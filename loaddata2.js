@@ -9,7 +9,7 @@ var repeat = true;
 var retain = false; //this is referred to as "path" in the spec
 var maxAge = 10;
 var ageVar = 0;
-var size = 0.2;
+var size = 0.1;
 var reinit = {offsets: false}; //this originally had more values but i removed them all le mao
 
 const TEST = false;
@@ -105,9 +105,8 @@ function initParticles() {
 // vertex positions
 function loadvertices() { //called every frame. also really enjoy how this isnt properly cased
 	let verts = [];
-	particles.sort();
 	for(let i = 0; i < particles.length; i++) { //no frame limit because he literally says to remove it
-		if (frameCount % 15 == 0) {
+		if (frameCount % 4 == 0) {
 			particles[i].age += 1;
 			if (particles[i].age >= particles[i].maxAge) { //xactly 10 steps
 				if(particles[i].isClone || !repeat) { //the clones must die because i hate them. also kill if repeat is off
@@ -119,7 +118,6 @@ function loadvertices() { //called every frame. also really enjoy how this isnt 
 			}
 			else if (!particles[i].isClone) { //don't re-clone or move clones
 				if (retain) { //if path is on we clone the particle before moving it
-					console.log("cloning particle",particles[i]);
 					particles.push(particles[i].clone());
 				}
 				particles[i].updatePos();
@@ -181,6 +179,7 @@ function loadheight() {
 function loadcolours() {
 	let colours = [];
 	for (let c = 0; c < particles.length; c++) {
+		colours.push(...particles[c].colours);
 		colours.push(...particles[c].colours);
 	} //exterpeince paion
 	return colours;
