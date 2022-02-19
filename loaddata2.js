@@ -6,10 +6,10 @@ var xzOffset = 0.05;
 var yOffset = 0.05;
 var particleCount = 1;
 var repeat = true;
-var retain = true; //this is referred to as "path" in the spec
+var retain = false; //this is referred to as "path" in the spec
 var maxAge = 10;
 var ageVar = 0;
-var size = 0.1;
+var size = 0.2;
 var reinit = {offsets: false}; //this originally had more values but i removed them all le mao
 
 const TEST = false;
@@ -30,6 +30,7 @@ class Particle {
 		this.offsets = {};
 		this.calculateOffsets();
 		this.calculateVertices();
+		this.calculateColours();
 		this.normals = [0.0, 0.0, 1.0,
                         0.0, 0.0, 1.0,
                         0.0, 0.0, 1.0,
@@ -55,6 +56,12 @@ class Particle {
                          this.pos.x + hsize, this.pos.y - hsize, this.pos.z,
                          this.pos.x - hsize, this.pos.y - hsize, this.pos.z];
 	}
+	calculateColours() {
+		this.colours = [randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0),  //random colour 1
+                        randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0),  //random colour 2
+                        randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0),  //random colour 3
+                        randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0)]; //viewer must die
+	}
 	updatePos() {
 		this.pos.x += this.offsets.x;
 		this.pos.y += this.offsets.y;
@@ -74,7 +81,7 @@ function getDefaultParticle() {
 
 // return the number of vertices in the object
 function getVertexCount() { //yuh
-    return particles.length * 6;
+	return particles.length * 6;
 }
 
 function reInitParticles() { //called when something changes due to a keypress.
@@ -98,10 +105,11 @@ function initParticles() {
 // vertex positions
 function loadvertices() { //called every frame. also really enjoy how this isnt properly cased
 	let verts = [];
+	particles.sort();
 	for(let i = 0; i < particles.length; i++) { //no frame limit because he literally says to remove it
-		if (frameCount % 4 == 0) {
+		if (frameCount % 15 == 0) {
 			particles[i].age += 1;
-			if (particles[i].age > particles[i].maxAge) {
+			if (particles[i].age >= particles[i].maxAge) { //xactly 10 steps
 				if(particles[i].isClone || !repeat) { //the clones must die because i hate them. also kill if repeat is off
 					particles.splice(i, 1);
 				}
@@ -111,6 +119,7 @@ function loadvertices() { //called every frame. also really enjoy how this isnt 
 			}
 			else if (!particles[i].isClone) { //don't re-clone or move clones
 				if (retain) { //if path is on we clone the particle before moving it
+					console.log("cloning particle",particles[i]);
 					particles.push(particles[i].clone());
 				}
 				particles[i].updatePos();
@@ -129,8 +138,8 @@ function loadvertices() { //called every frame. also really enjoy how this isnt 
 // all the same 
 function loadnormals() {
 	let normals = [];
-	for (let particleIndex in particles) {
-		normals.push(...particles[particleIndex].normals); //slow? dont care.
+	for (let c = 0; c < particles.length; c++) {
+		normals.push(...particles[c].normals); //slow? dont care.
 	}
 	return normals;
 }
@@ -148,14 +157,14 @@ function loadtextcoords() { //TODO: needs some revamping
 		textures.push(0.5, 0.5, 1.0, 0.5, 1.0, 1.0);
 	}
 	return textures;
-}
+} //should i remove this from here given that we use colours and not textures now?
 
 
 // load vertex indices
 function loadvertexindices() {
 	let indices = [];
 	for (let c = 0; c < particles.length * 6; c+=6) {
-		indices.push(...[c, c+1, c+2, c+3, c+4, c+5]);
+		indices.push(c, c+1, c+2, c+3, c+4, c+5);
 	}
 	return indices; //slow? don't care.
 }
@@ -170,16 +179,11 @@ function loadheight() {
 }
 
 function loadcolours() {
-    let colours = [];
-    for (let c = 0; c < particles.length; c++) {
-        colours.push(
-            randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), //random colour 1
-            randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), //random colour 2
-            randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), //random colour 3
-            randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), //viewer must die
-        );
-    } //exterpeince paion
-    return colours;
+	let colours = [];
+	for (let c = 0; c < particles.length; c++) {
+		colours.push(...particles[c].colours);
+	} //exterpeince paion
+	return colours;
 }
 
 function loadtexture() {

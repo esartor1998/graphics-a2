@@ -31,12 +31,11 @@ function main() {
 		uniform mat4 uNormalMatrix;
 		uniform mat4 uModelViewMatrix;
 		uniform mat4 uProjectionMatrix;
-		varying highp vec2 vTextureCoord;
 		varying highp vec3 vLighting;
 		varying lowp vec4 vColor;
 		void main(void) {
 			gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-			vTextureCoord = aTextureCoord;
+			vColor = aVertexColor;
 			// Apply lighting effect
 			highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
 			highp vec3 directionalLightColor = vec3(1, 1, 1);
@@ -44,19 +43,16 @@ function main() {
 			highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
 			highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
 			vLighting = ambientLight + (directionalLightColor * directional);
-			vColor = aVertexColor;
 		}
   	`; //hmm.
 
   // Fragment shader program
 
 	const fsSource = `
-		varying highp vec2 vTextureCoord;
 		varying highp vec3 vLighting;
 		uniform sampler2D uSampler;
 		varying lowp vec4 vColor;
 		void main(void) {
-			highp vec4 texelColor = texture2D(uSampler, vTextureCoord);
 			gl_FragColor = vColor;
     	}
   	`; //yes...
@@ -74,7 +70,6 @@ function main() {
     	attribLocations: {
     		vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
     		vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
-    		textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
 			vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
     	},
     	uniformLocations: {
@@ -89,7 +84,7 @@ function main() {
 	// objects we'll be drawing.
 	buffers = initBuffers(gl);
 
-	const texture = loadTexture(gl, 'cubetexture.png');
+	//const texture = loadTexture(gl, 'cubetexture.png');
 
 	var then = 0;
 
@@ -99,7 +94,7 @@ function main() {
 		const deltaTime = now - then;
 		then = now;
 
-		drawScene(gl, programInfo, buffers, texture, deltaTime);
+		drawScene(gl, programInfo, buffers, deltaTime);
 
 		requestAnimationFrame(render);
 	}
@@ -139,46 +134,28 @@ function initBuffers(gl) {
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexNormals),
 				  gl.DYNAMIC_DRAW);
 
-	// Now set up the texture coordinates for the faces.
-
-	const textureCoordBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
-
-	// load texture coordinates data from loaddata.js
-	const textureCoordinates = loadtextcoords();
-
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates),
-				  gl.DYNAMIC_DRAW);
-
 	// Build the element array buffer; this specifies the indices
 	// into the vertex arrays for each face's vertices.
 
 	const indexBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-
 	// This array defines each face as two triangles, using the
 	// indices into the vertex array to specify each triangle's
 	// position.
-
 		// load indices from loaddata.js
 	const indices = loadvertexindices();
-
 	// Now send the element array to GL
-
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.DYNAMIC_DRAW);
-
-
-	const colors = loadcolours();
-	//the only correct spelling of colour in this whole file cuz webgl hates it when you can spell
-
+	
 	const colorBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+	const colors = loadcolours();
+	//the only correct spelling of colour in this whole file cuz webgl hates it when you can spell
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
 
 	return {
 		position: positionBuffer,
 		normal: normalBuffer,
-		textureCoord: textureCoordBuffer,
 		indices: indexBuffer,
 		color: colorBuffer,
 	};
@@ -188,7 +165,7 @@ function initBuffers(gl) {
 // Initialize a texture and load an image.
 // When the image finished loading copy it into the texture.
 //
-function loadTexture(gl, url) {
+/*function loadTexture(gl, url) {
 	const texture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -221,7 +198,7 @@ function loadTexture(gl, url) {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
 	return texture;
-}
+}*/
 
 function isPowerOf2(value) {
 	return (value & (value - 1)) == 0;
@@ -230,7 +207,7 @@ function isPowerOf2(value) {
 //
 // Draw the scene.
 //
-function drawScene(gl, programInfo, buffers, texture, deltaTime) {
+function drawScene(gl, programInfo, buffers, deltaTime) {
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
 	gl.clearDepth(1.0);                 // Clear everything
 	gl.enable(gl.DEPTH_TEST);           // Enable depth testing
@@ -314,7 +291,7 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
 			programInfo.attribLocations.vertexPosition);
 	}
 
-	// Tell WebGL how to pull out the texture coordinates from
+	/*// Tell WebGL how to pull out the texture coordinates from
 	// the texture coordinate buffer into the textureCoord attribute.
 	{
 		const numComponents = 2;
@@ -332,7 +309,7 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
 			offset);
 		gl.enableVertexAttribArray(
 			programInfo.attribLocations.textureCoord);
-	}
+	} oh yeah baby, its colour time. get this shit out of here */
 
 	// Tell WebGL how to pull out the normals from
 	// the normal buffer into the vertexNormal attribute.
@@ -399,10 +376,10 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
 	// Specify the texture to map onto the faces.
 
 	// Tell WebGL we want to affect texture unit 0
-	gl.activeTexture(gl.TEXTURE0);
+	//gl.activeTexture(gl.TEXTURE0);
 
 	// Bind the texture to texture unit 0
-	gl.bindTexture(gl.TEXTURE_2D, texture);
+	//gl.bindTexture(gl.TEXTURE_2D, texture);
 
 	// Tell the shader we bound the texture to texture unit 0
 	gl.uniform1i(programInfo.uniformLocations.uSampler, 0);

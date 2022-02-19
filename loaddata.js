@@ -6,7 +6,7 @@ var xzOffset = 0.05;
 var yOffset = 0.05;
 var particleCount = 1;
 var repeat = true;
-var retain = true; //this is referred to as "path" in the spec
+var retain = false; //this is referred to as "path" in the spec
 var maxAge = 10;
 var ageVar = 0;
 var size = 0.1;
@@ -101,7 +101,7 @@ function loadvertices() { //called every frame. also really enjoy how this isnt 
 	for(let i = 0; i < particles.length; i++) { //no frame limit because he literally says to remove it
 		if (frameCount % 4 == 0) {
 			particles[i].age += 1;
-			if (particles[i].age > particles[i].maxAge) {
+			if (particles[i].age >= particles[i].maxAge) {
 				if(particles[i].isClone || !repeat) { //the clones must die because i hate them. also kill if repeat is off
 					particles.splice(i, 1);
 				}
