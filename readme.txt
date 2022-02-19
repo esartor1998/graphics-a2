@@ -1,3 +1,11 @@
+Eric Sartor
+1000712
+2/19/2022
+
+Everything works, this time. Really glad all my midterms are done.
+
+———————————————————————————————————————————————————————————————————————————————
+
 Assignment 1 - Particle Systems, Vertex Colour
 Due. Friday February 18, 2022
 
