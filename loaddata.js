@@ -48,12 +48,12 @@ class Particle {
 	calculateVertices() { //internally used mf constantly
 		let hsize = size/2;
 		this.vertices = [this.pos.x - hsize, this.pos.y + hsize, this.pos.z,
-                         this.pos.x + hsize, this.pos.y + hsize, this.pos.z,
                          this.pos.x + hsize, this.pos.y - hsize, this.pos.z,
+                         this.pos.x - hsize, this.pos.y - hsize, this.pos.z,
 
+                         this.pos.x + hsize, this.pos.y + hsize, this.pos.z,
                          this.pos.x - hsize, this.pos.y + hsize, this.pos.z,
-                         this.pos.x + hsize, this.pos.y - hsize, this.pos.z,
-                         this.pos.x - hsize, this.pos.y - hsize, this.pos.z];
+                         this.pos.x + hsize, this.pos.y - hsize, this.pos.z];
 	}
 	updatePos() {
 		this.pos.x += this.offsets.x;

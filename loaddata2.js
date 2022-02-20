@@ -49,12 +49,12 @@ class Particle {
 	calculateVertices() { //internally used mf constantly
 		let hsize = size/2;
 		this.vertices = [this.pos.x - hsize, this.pos.y + hsize, this.pos.z,
-                         this.pos.x + hsize, this.pos.y + hsize, this.pos.z,
                          this.pos.x + hsize, this.pos.y - hsize, this.pos.z,
+                         this.pos.x - hsize, this.pos.y - hsize, this.pos.z,
 
+                         this.pos.x + hsize, this.pos.y + hsize, this.pos.z,
                          this.pos.x - hsize, this.pos.y + hsize, this.pos.z,
-                         this.pos.x + hsize, this.pos.y - hsize, this.pos.z,
-                         this.pos.x - hsize, this.pos.y - hsize, this.pos.z];
+                         this.pos.x + hsize, this.pos.y - hsize, this.pos.z];
 	}
 	calculateColours() {
 		this.colours = [randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0), randRange(0.0, 1.0),  //random colour 1
